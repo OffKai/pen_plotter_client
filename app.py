@@ -1,4 +1,4 @@
-import asyncio
+import sys
 
 from pyaxidraw import axidraw
 import socketio
@@ -10,10 +10,9 @@ def plot(svg: str):
 
     # plot the svg
     ad.plot_setup(svg)
-    # TODO: enable this for the demo, probably easier to see on camera
-    ad.options.auto_rotate = True
-    # ad.options.speed_pendown = 40
-    # ad.options.speed_penup = 75
+    ad.options.auto_rotate = False
+    ad.options.speed_pendown = 50
+    ad.options.speed_penup = 75
     ad.plot_run()
 
     # turn off the motors
@@ -23,41 +22,44 @@ def plot(svg: str):
     ad.plot_run()
 
 
-sio = socketio.AsyncClient()
+sio = socketio.Client()
 
-
-@sio.event
-async def connect():
+@sio.on("connect", namespace="/plotter")
+def connect():
     print("Connected!")
-    await sio.emit("join", {"room": "plotter"})
 
 
-@sio.event
-async def connect_error(data):
+@sio.on("connect_error", namespace="/plotter")
+def connect_error(data):
     print("Connection failed!")
 
 
-@sio.event
-async def disconnect():
+@sio.on("disconnect", namespace="/plotter")
+def disconnect():
     print("Disconnected!")
 
 
-@sio.on("plot")
-async def on_plot(data):
+@sio.on("plot", namespace="/plotter")
+def on_plot(data):
     print("Received: ")
     print(data["svg"])
     plot(data["svg"])
 
 
-async def main():
-    uri = "<insert url here>"
+def main():
+    if len(sys.argv) < 2:
+        sys.exit("Please state the URL you wish to connect to as a command line argument.\ne.g. python app.py https://example.com")
+        
+    server_url = sys.argv[1]
+    print(f"Connecting to {server_url}")
+    print("...")
 
     # connect to server
-    await sio.connect(uri)
+    sio.connect(server_url, namespaces=["/plotter"])
 
     # wait forever
-    await sio.wait()
+    sio.wait()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
