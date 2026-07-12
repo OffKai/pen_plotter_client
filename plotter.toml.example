@@ -1,0 +1,4 @@
+[plotter]
+id = "room1"
+server_url = "http://localhost:4000"
+dry_run = false

@@ -1,21 +1,19 @@
-import sys
-
-from pyaxidraw import axidraw
 import socketio
+
+from config import parse_settings
 
 
 def plot(svg: str):
-    # connect to plotter
+    from pyaxidraw import axidraw
+
     ad = axidraw.AxiDraw()
 
-    # plot the svg
     ad.plot_setup(svg)
     ad.options.auto_rotate = False
     ad.options.speed_pendown = 50
     ad.options.speed_penup = 75
     ad.plot_run()
 
-    # turn off the motors
     ad.plot_setup()
     ad.options.mode = "manual"
     ad.options.manual_cmd = "disable_xy"
@@ -23,15 +21,17 @@ def plot(svg: str):
 
 
 sio = socketio.Client()
+settings = None
+
 
 @sio.on("connect", namespace="/plotter")
 def connect():
-    print("Connected!")
+    print(f"Connected as {settings.plotter_id}.")
 
 
 @sio.on("connect_error", namespace="/plotter")
 def connect_error(data):
-    print("Connection failed!")
+    print(f"Connection failed: {data}")
 
 
 @sio.on("disconnect", namespace="/plotter")
@@ -41,23 +41,29 @@ def disconnect():
 
 @sio.on("plot", namespace="/plotter")
 def on_plot(data):
-    print("Received: ")
-    print(data["svg"])
-    plot(data["svg"])
+    svg = data["svg"]
+    print(f"Received plot ({len(svg)} bytes).")
+
+    if settings.dry_run:
+        print(svg)
+    else:
+        plot(svg)
 
 
-def main():
-    if len(sys.argv) < 2:
-        sys.exit("Please state the URL you wish to connect to as a command line argument.\ne.g. python app.py https://example.com")
-        
-    server_url = sys.argv[1]
-    print(f"Connecting to {server_url}")
-    print("...")
+def main(argv=None):
+    global settings
+    settings = parse_settings(argv)
 
-    # connect to server
-    sio.connect(server_url, namespaces=["/plotter"])
+    print(
+        f"Connecting to {settings.server_url} as {settings.plotter_id} "
+        f"(dry_run={settings.dry_run})"
+    )
+    sio.connect(
+        settings.server_url,
+        namespaces=["/plotter"],
+        auth={"id": settings.plotter_id},
+    )
 
-    # wait forever
     sio.wait()
 
 
