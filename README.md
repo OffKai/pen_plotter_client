@@ -13,10 +13,12 @@ pip install -r requirements.txt
 
 ## Start
 
-Every client needs a routing ID from `room1` through `room4`.
+Every client needs a routing ID: `room1` through `room5`, or `backroom`
+(same slot as `room5`).
 
 ```bash
 python app.py https://plotter.offkaiexpo.com --plotter-id room1
+python app.py https://plotter.offkaiexpo.com --plotter-id backroom
 ```
 
 The ID can be configured using CLI arguments, environment variables, or TOML:
@@ -47,4 +49,5 @@ Supported environment variables are `PLOTTER_ID`, `PLOTTER_SERVER_URL` (or
 ```bash
 python app.py http://localhost:4000 --plotter-id room1 --dry-run
 python app.py http://localhost:4000 --plotter-id room2 --dry-run
+python app.py http://localhost:4000 --plotter-id backroom --dry-run
 ```
