@@ -17,7 +17,11 @@ class Settings:
 def parse_settings(argv: list[str] | None = None) -> Settings:
     parser = argparse.ArgumentParser(description="Run an OffKai pen plotter client.")
     parser.add_argument("server_url", nargs="?", help="Phoenix coordinator URL")
-    parser.add_argument("-i", "--plotter-id", help="Routing ID (room1 through room4)")
+    parser.add_argument(
+        "-i",
+        "--plotter-id",
+        help="Routing ID (room1 through room5, or backroom)",
+    )
     parser.add_argument("-c", "--config", type=Path, help="Path to a TOML config file")
     parser.add_argument(
         "--dry-run",
