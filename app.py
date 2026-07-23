@@ -15,8 +15,7 @@ def plot(svg: str):
     ad.plot_run()
 
     ad.plot_setup()
-    ad.options.mode = "manual"
-    ad.options.manual_cmd = "disable_xy"
+    ad.options.mode = "align"
     ad.plot_run()
 
 
